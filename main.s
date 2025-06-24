@@ -1,95 +1,115 @@
 .data
 	.include "variaveis.data"	# Arquivo que contem todas as variaveis - mapas, posicoes, etc - usadas no jogo
+	DEBUG_MSG: .string "Achei um bloco de valor 2\n"
 
 .text
-	la s2, TILEMAP_MUTAVEL	# Pegue o endereco do Tilemap
-	addi s2, s2, -1		# Essa correcao permite que o LOOP_TILEMAP sempre funcione com iterando o endereco do byte do tilemap
-	li t0, 0		# Primeira matriz do tilemap
-	li t1, 299		# Ultima matriz do tilemap
-# Loop que percorre todo o Tilemap. Da esquerda para direita, de cima para baixo e byte a byte.
-LOOP_TILEMAP:
-	bgt t0, t1, FIM		# Enquanto t0 < ultima matriz do tilemap, faca o abaixo
-		lui t4, 0xFF000	# Carrega os 20 bits mais a esquerda de t4 com ENDERECO_INICIAL_FRAME : Nesse caso do Frame 0
-	
-		# As contas abaixo objetivam gerar uma correspondencia direta entre a posicao no Tilemap (t0) e no Frame (Endereco em t4)
-	
-		# 0xFF00 + 5120 * t0 // 20 : 
-		li t2, 20	# Pegue o valor 20: Quantidade de colunas no Tilemap
-		div t2, t0, t2	# t2 = t0 // 20	: isto eh quantidade de linhas que ja foram processadas no tilemap
-		li t3, 5120	# Pegue o valor de 5120 que eh 16 * 320 que equivale a pular 16 linhas para baixo no frame
-		mul t2, t3, t2	# t2 = 5120 * t0 // 20 : isto eh quantidade pixels em linha que devem ser pulados
-		add t4, t4, t2	# Acrescente ao endereco inicial do Frame
-		
-		# [0xFF00 + 5120 * t0 // 20] + 16 * (t0 % 20)
-		li t2, 20	# Pegue o valor 20: Quantidade de colunas no Tilemap
-		rem t2, t0, t2	# Pegue o resto da divisao de t0 % 20 : Colunas restantes a serem contabilizadas
-		li t3, 16	# 16 eh o tamanho de colunas em um matriz
-		mul t2, t3, t2	# 16 * (t0 % 20) gera o valor em endereco correspondente a quantidade de matriz passadas na matriz
-		add t4, t4, t2	# Acrescente ao endereco calculado ate agora
+CONFIGURA_FASE_1:
+##########################################################
+# Renderiza os frames estaticamente (por completo) #######
+##########################################################
+	.include "RENDERIZA_FRAME_0_FASE_1.s"
+	.include "RENDERIZA_FRAME_1_FASE_1.s"
+	#j FIM_GAME_LOOP_FASE_1
 
-		addi s2, s2, 1	# Itere o endereco do byte no tilemap
-		lb t5, 0(s2)	# Valor da matriz no Tilemap
-		
-# Os casos abaixos pegam a imagem que deve ser printada
-CASO_0:
-		li t2, 0		# Pegue o valor 0
-		bne t5, t2, CASO_1	# Compare com o valor no byte atual do Tilemap
-		la t5, IMAGEM_0		# Se o byte atual == 0, pegue a imagem_0
-		j PREENCHE_MATRIZ	# Printa a matriz do byte atual
-CASO_1:
-		li t2, 1		# Pegue o valor 0										
-		bne t5, t2, CASO_2	# Compare com o valor no byte atual do Tilemap
-		la t5, IMAGEM_1		# Se o byte atual == 1, pegue a imagem_1
-		j PREENCHE_MATRIZ	# Printa a matriz do byte atual
-CASO_2:
-		li t2, 2		# Pegue o valor 0
-		bne t5, t2, CASO_3	# Compare com o valor no byte atual do Tilemap
-		la t5, IMAGEM_2		# Se o byte atual == 2, pegue a imagem_2
-		j PREENCHE_MATRIZ	# Printa a matriz do byte atual							
-CASO_3:
-		li t2, 3			# Pegue o valor 0
-		# O ultimo caso possui uma comparacao oposta dos demais (!= ao inves de ==).
-		bne t5, t2, ITERA_LOOP_TILEMAP	# Compare com o valor no byte atual do Tilemap.
-		la t5, IMAGEM_3			# Se o byte atual == 3, pegue a imagem_3
+################################################
+###### Inicializa Frame a ser renderizado ######
+################################################
+	li t0, 0xFF200604	# Pega endereco de SELECAO_DE_FRAME_EXIBIDO
+	li t1, 0			# Pega o valor 0
+	sw t1, 0(t0)		# O primeiro FRAME a ser mostrado serah o FRAME 0
 
-# Matriz eh um conjunto de 16x16 pixels
-# O loop abaixo printa o valor da imagem correspondente a matriz byte do tilemap
-PREENCHE_MATRIZ:
-		# Inicializa linha e ultima linha
-		li s0, 0	# Linha inicial = 0
-		li s1, 16	# Linha final = 16
-# Loop para printar cada linha da matriz
-LOOP_LINHAS_MATRIZ:
-	beq s0, s1, ITERA_LOOP_TILEMAP	# Enquanto i < 16, faca o abaixo
-		# Inicializa coluna e ultima coluna
-		li t2, 0	# Coluna inicial = 0
-		li t3, 15	# t3 = numero de colunas
-	# Loop para printar cada pixel (coluna) de uma linha da respectiva linha da matriz
-	LOOP_COLUNA:			
-		beq t2,t3,SOMA_LINHA	# Enquanto coluna < 16
-		#PREENCHE_BYTE
-		lb t6,0(t5)		# Pegue o byte de cor da imagem
-		sb t6,0(t4)		# Pinte o respectivo pixel no Bitmap Display
-		addi t4,t4,1		# Atualiza Endereco atual do frame em 1 byte
-		addi t5,t5,1		# Atualiza Endereco atual da imagem em 1 byte
+################################################
+###### Inicializa posicao Jogador ##############
+################################################
+	la t0, POSICAO_JOGADOR
+	li t1, 41
+	sw t1, 0(t0)
 	
-		addi t2,t2,1		# coluna++
-		j LOOP_COLUNA		# Retorne para a verificacao do Loop das Colunas
+	la t1, IMAGEM_JOGADOR_baixo
+	la t5, IMAGEM_JOGADOR
+	sw t1, 0(t5)
 
-# Etapa de iteracao da linha e de correcao do pixel inicial				
-SOMA_LINHA:
-	addi s0, s0, 1	# linha ++
-	addi t5, t5, 1	# Proxima linha do Tilemap
-	
-	# Inicia proxima linha
-	addi t4, t4, -15	# Retorne ao primeiro pixel da linha
-	addi t4, t4, 320	# Passe para a linha abaixo
-	
-	j LOOP_LINHAS_MATRIZ	# Retorne para a verificacao do Loop das Linhas Matriz
+################################################
+###### Inicializa todos os scores ##############
+################################################
+	.include "INICIALIZA_SCORES.s"
 
-# Etapa de iteracao do byte no Tilemap		
-ITERA_LOOP_TILEMAP:
-		addi t0, t0, 1	# t0++
-		j LOOP_TILEMAP # Retorne para a verificacao do Loop que percorre o Tilemap
-# Fim do programa
-FIM:	
+##############################################################
+# Inicializa todos os TEMPO_INICIAL das funcoes periodicas ###
+##############################################################
+	# Pega tempo atual
+	li a7, 30
+	ecall
+
+	# Correcao para que todas funcoes rodem pela primeira vez
+	li t0, -6000		# O valor aqui precisa ser ajustado para que todas as funcoes funcionem
+	add a0, a0, t0		# "Atrasa" TEMPO_ATUAL
+											
+	# Inicializa TEMPO_INICIAL_SCORE_TIMER
+	la s2, TEMPO_INICIAL_SCORE_TIMER
+	sw a0, 0(s2)	# Inicializa: TEMPO_INICIAL_SCORE_TIMER = TEMPO_ATUAL			
+
+	# Inicializa TEMPO_INICIAL_MUSICA
+	la s2, TEMPO_INICIAL_MUSICA
+	li t0, 0
+	sw t0, 0(s2)	# Inicializa: TEMPO_INICIAL_MUSICA = TEMPO_ATUAL
+
+#############################################################
+# Inicializa as variaveis de usadas na MUSICA ###
+#############################################################
+
+	# Configura instrumento
+	li a2, 42	# Define que o timbre do instrumento : Nesse caso, um instrumento de cordas qualquer
+	li a3, 80	# Define o volume da nota : Nesse caso 80 decibeis
+
+	# Inicializa ponteiro ("agulha") da musica
+	li t0, 0			# t0 = 0
+	la t1, INDICE_NOTA	# t1 = &INDICE_NOTA
+	sw t0, 0(t1)		# INDICE_NOTA = 0 : Comecamos a musica na nota 0
+
+	# Inicializa TAMANHO_MUSICA : variavel auxiliar que guarda o numero de notas da musica. Serve para permitir loop de musica
+	la t0, TAMANHO_MUSICA_FUNDO_FASE_1	# Pega endereco de TAMANHO_MUSICA_FUNDO_FASE_1
+	lw t0, 0(t0)						# Pega conteudo de TAMANHO_MUSICA_FUNDO_FASE_1
+	la t1, TAMANHO_MUSICA				# Pega endereco de TAMANHO_MUSICA
+	sw t0, 0(t1)						# TAMANHO_MUSICA = TAMANHO_MUSICA_FUNDO_FASE_1
+
+INICIO_GAME_LOOP_FASE_1:
+
+	# li a7, 4
+	# la a0, DEBUG_MSG
+	# ecall
+	.include "REDUZ_TIMER.s"
+
+	# ####################################
+	# # RENDERIZAÇOES DINAMICAS #
+	# ####################################
+	.include "RENDERIZA_CAMPO.s"
+	.include "RENDERIZA_JOGADOR.s"
+
+	# Troca/Inverte Frames
+	li t0, 0xFF200604	# Pega endereco de SELECAO_DE_FRAME_EXIBIDO
+	lw t1, 0(t0)		# Pega o valor 0
+	xori t1, t1, 1		# Se Frame atual == 0, alterna para o frame 1 e vice-versa
+	sw t1, 0(t0)		# Atualiza o valor de SELECAO_DE_FRAME_EXIBIDO
+	
+	.include "TECLADO_FASE_1.s"
+
+	# ############################
+	# # FUNCAO ATUALIZA_TILEMAP
+	# ############################
+	# A posicao do personagem eh salva como parte do Tilemap
+
+	.include "ATUALIZA_TILEMAP.s"
+
+	.include "TOCA_MUSICA.s"
+
+	j INICIO_GAME_LOOP_FASE_1
+
+FIM_GAME_LOOP_FASE_1:
+	li a7, 10
+	ecall
+
+#CONFIGURA_FASE_2:
+#INICIO_GAME_LOOP_FASE_2:
+
+#FIM_GAME_LOOP_FASE_2:
