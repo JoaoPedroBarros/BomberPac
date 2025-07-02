@@ -86,11 +86,12 @@ CONFIGURA_FASE_1:
 ################################################
 ###### Inicializa inimigos ##############
 ################################################
+	# Inicializa Posicoes dos inimigos
 	la t0, POSICAO_INIMIGOS
-	li t1, 158
+	li t1, 98
 	sw t1, 0(t0)	# Posicao do primeiro inimigo
 	
-	li t1, 178
+	li t1, 278
 	sw t1, 4(t0)	# Posicao do segundo inimigo
 
 	li t1, 270
@@ -99,6 +100,7 @@ CONFIGURA_FASE_1:
 	li t1, 269
 	sw t1, 12(t0)	# Posicao do segundo inimigo
 	
+	# Inicializa Offsets dos inimigos
 	la t0, OFFSET_INIMIGOS
 	li t1, -1
 	sb t1, 0(t0)	# Offset do primeiro inimigo
@@ -106,6 +108,14 @@ CONFIGURA_FASE_1:
 	li t1, -1
 	sb t1, 1(t0)	# Offset do segundo inimigo
 
+	la t0, OFFSET_INIMIGOS
+	li t1, -20
+	sb t1, 2(t0)	# Offset do primeiro inimigo
+	
+	li t1, -20
+	sb t1, 3(t0)	# Offset do segundo inimigo
+
+	# Inicializa Imagens dos inimigos
 	la t5, IMAGEM_INIMIGOS
 	la t1, IMAGEM_FANTASMA_ESQUERDA
 	sw t1, 0(t5)	# Imagem do primeiro inimigo
@@ -118,12 +128,6 @@ CONFIGURA_FASE_1:
 
 	la t1, IMAGEM_FANTASMA_ESQUERDA
 	sw t1, 12(t5)	# Imagem do segundo inimigo
-
-	# # Inicializa TEMPO_INICIAL_POWER_UP_FORCA
-	# la s2, TEMPO_INICIAL_POWER_UP_FORCA
-	# li t0, -1
-	# sw t0, 0(s2)	# Inicializa: TEMPO_INICIAL_MUSICA = TEMPO_ATUAL
-
 
 ################################################
 ###### Inicializa todos os scores ##############
@@ -149,10 +153,22 @@ CONFIGURA_FASE_1:
 	li t0, 0
 	sw t0, 0(s2)	# Inicializa: TEMPO_INICIAL_MUSICA = TEMPO_ATUAL
 
+	# Inicializa TEMPO_INICIAL_INIMIGOS
+	la t0, TEMPO_INICIAL_INIMIGOS
+	li s0, 0
+	la s1, QUANTIDADE_DE_INIMIGOS
+	lb s1, 0(s1)
+	LOOP_TEMPO_INICIAL_INIMIGOS:
+		beq s0, s1, CONFIGURA_MUSICA
+			sw a0, 0(t0)	# TEMPO_INICIAL_INIMIGOS[s0] = a0
+			addi s0, s0, 1	# Itera contador
+			addi t0, t0, 4	# Itera vetor TEMPO_INICIAL_INIMIGOS
+		j LOOP_TEMPO_INICIAL_INIMIGOS
+
 #############################################################
 # Inicializa as variaveis de usadas na MUSICA ###
 #############################################################
-
+CONFIGURA_MUSICA:
 	# Configura instrumento
 	li a2, 42	# Define que o timbre do instrumento : Nesse caso, um instrumento de cordas qualquer
 	li a3, 80	# Define o volume da nota : Nesse caso 80 decibeis
@@ -178,9 +194,6 @@ INICIO_GAME_LOOP_FASE_1:
 	# ####################################
 	# # RENDERIZAÇOES DINAMICAS #
 	# ####################################
-
-	# li t0, 800
-	# call Espera
 
 	.include "RENDERIZA_CAMPO.s"
 	## Renderiza Inimigos
@@ -229,7 +242,7 @@ INICIO_GAME_LOOP_FASE_1:
 	#####################################################################################
 	######## Incrementar musica para receber vetor instrumento e volume #####################
 	#################################################################################
-	.include "TOCA_MUSICA.s"
+	#.include "TOCA_MUSICA.s"
 
 	j INICIO_GAME_LOOP_FASE_1
 
@@ -242,13 +255,13 @@ FIM_GAME_LOOP_FASE_1:
 ######################################################
 # O intuito dessas funcoes eh diminuir o codigo para evitar problemas de salto (j, call)
 
-# t0 = Tempo de espera em milisegundos (Valor deve ser nao negativo)
+# s0 = Tempo de espera em milisegundos (Valor deve ser nao negativo)
 Espera:
 	li a7, 30
 	ecall
-	add t0, a0, t0
+	add s0, a0, t0
 	LoopEspera:
-		bgt a0, t0, FimEspera
+		bgt a0, s0, FimEspera
 			li a7, 30
 			ecall
 		j LoopEspera

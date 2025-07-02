@@ -33,7 +33,7 @@
 	la s2, TEMPO_INICIAL_SCORE_TIMER    # Pega endereco de TEMPO_INICIAL_SCORE_TIMER
 	sw a0, 0(s2)                        # Atualiza o conteudo de TEMPO_INICIAL_SCORE_TIMER
 
-	la t0, VIDAS  # Pega o endereco de SCORE_TIMER
+	la t0, VIDAS  		# Pega o endereco de SCORE_TIMER
 	lw s3, 0(t0)        # Pega o conteudo de SCORE_TIMER
 	li t0, 2			# Posicao em que serah printado as unidades
 	call PRINTA_ALGARISMOS

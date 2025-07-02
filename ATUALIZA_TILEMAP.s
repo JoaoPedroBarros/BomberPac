@@ -305,15 +305,11 @@ MOVIMENTA_JOGADOR:
 		lb s6, 0(s6)
 
 		LOOP_CONFERE_COLISAO_INIMIGO:
+			# Confere todas as posicoes dos inimigos
 			beq s4, s6, COLETA_PONTO
 				lw t2, 0(t3)
-
-				# li a7, 4
-				# la a0, DEBUG_MSG
-				# ecall
-
 				bne t0, t2, ITERA_LOOP_CONFERE_COLISAO_INIMIGO
-
+				# Reduz vida em 1
 				la t2, VIDAS
 				lw t4, 0(t2)
 				addi t4, t4, -1
@@ -353,43 +349,83 @@ MOVIMENTA_JOGADOR:
 		sb t2, 0(s1)    	# Apaga rastro do Jogador
 		sw t0, 0(s0)        # Atualiza POSICAO_JOGADOR
 
-    j MOVIMENTA_INIMIGOS
-
 MOVIMENTA_INIMIGOS:
+	# Pega endereco inicial do vetores POSICAO, OFFSET dos inimigos, do Tilemap_atual e do TEMPO_INICIAL_INIMIGOS
+	la s5, POSICAO_INIMIGOS
+	la s7, OFFSET_INIMIGOS
+	lw t6, TILEMAP_MUTAVEL
+	la s2, TEMPO_INICIAL_INIMIGOS
+
+	# Verifica fase atual para definir tipo de inimigo
+	la t0, FASE_ATUAL
+	lw t0, 0(t0)
+	li t2, 1
+	bne t0, t2, INIMIGO_TIPO_2
+
+	# Movimentacao do Inimigo Tipo 1 (Linhas Horizontais ou Verticais)
+	li s6, 0
+	la s8, QUANTIDADE_DE_INIMIGOS
+	lb s8, 0(s8)
+	LOOP_MOVIMENTA_INIMIGOS:
+		beq s6, s8, FIM_ATUALIZA_TILEMAP
+			lw t0, 0(s5)	# Pegue posicao do inimigo i
+			lb t1, 0(s7)	# Pegue offset do inimigo i
+
+			add t2, t6, t0	# Pegue tilemap da posicao inimigo i
+			add t2, t2, t1	# some o offset
+
+			lb t3, 0(t2)	# Pegue o conteudo do tilemap: posicao_inimigo + offset
+			li t4, 1
+			bne t3, t4, ANDA_INIMIGO	# t3 != t4 indica que nao houve colisao, logo apenas ande o inimigo
+				# Ajusta offset
+				li t4, -1
+				mul t1, t1, t4
+				sb t1, 0(s7)
+				j ITERA_LOOP_MOVIMENTA_INIMIGOS
+
+			# Movimenta inimigo
+			ANDA_INIMIGO:
+				lw t2, 0(s2)   # Pega TEMPO_INICIAL_INIMIGO i
+
+				# Pega tempo atual
+				li a7, 30           # Chama a funcao TIME()
+				ecall               # Chama o Sistema operacional
+
+				# Pega o tempo passado desde o tempo inicial
+				sub t3, a0, t2			# t3 = TEMPO_ATUAL - TEMPO_INICIAL_TESTE
+
+				# Faz as comparacoes de tempo serem de 250, 300, 350, 400
+				addi t2, s6, 1
+				li t4, 80
+				mul t4, t4, t2
+				li t2, 200
+
+				add t2, t2, t4	# Valor de comparacao   
+				blt t3, t2, ITERA_LOOP_MOVIMENTA_INIMIGOS # Se passou 1 segundo, reduza SCORE_TIMER	
+					# Atualiza posicao inimigo
+					add t0, t0, t1	# Pega posicao + offset
+					sw t0, 0(s5)	# POSICAO_INIMIGO i = posicao + offset
+
+					# Atualiaz a TEMPO_INICIAL inimigo i
+					li a7, 30   	# Chama a funcao TIME()
+					ecall       	# Chama o Sistema operacional
+					sw a0, 0(s2)	# Atualiza o conteudo de TEMPO_INICIAL inimigo i
+
+			ITERA_LOOP_MOVIMENTA_INIMIGOS:
+				addi s6, s6, 1	# Itera contador
+				addi s5, s5, 4	# Itera Vetor Posicao inimigos
+				addi s7, s7, 1	# Itera Vetor Offset inimigos
+				addi s2, s2, 4	# Itera Vetor TEMPO_INICIAL inimigos
+				j LOOP_MOVIMENTA_INIMIGOS
+
+
+	# Movimentacao do Inimigo Tipo 1 (Offset randomizado apos colisao)
+	INIMIGO_TIPO_2:
 	
-	# # # Movimenta Inimigos
-	# la s5 POSICAO_INIMIGOS
-
-	# la t0, FASE_ATUAL
-	# lw t0, 0(t0)
-	# li t2, 1
-	# bne t0, t2, INIMIGO_TIPO_2
-
-	# # Movimentacao do Inimigo Tipo 1 (Linhas Horizontais ou Verticais)
-	# li s6, 0
-	# la s8, QUANTIDADE_DE_INIMIGOS
-	# lb s8, 0(s8)
-	# LOOP_MOVIMENTA_INIMIGOS:
-	# 	beq s6, s8, FIM_LOOP_MOVIMENTA_INIMIGOS
-	# 	lw t5, 0(s7) 
-	# 	lw t0, 0(s5)
-	#	li t1, -1
-	#	beq t0, t1, PULA_RENDERIZACAO	#Verifica se o inimigo estah morto
-	# 	call RenderizacaoDinamica
-	#   PULA_RENDERIZACAO:
-	# 	addi s5, s5, 4
-
-	# 	addi s6, s6, 1
-	# 	j LOOP_MOVIMENTA_INIMIGOS
-	# FIM_LOOP_RENDERIZA_INIMIGOS:
-
-
-	# INIMIGO_TIPO_2:
-	# # Movimentacao do Inimigo Tipo 1 (Offset randomizado apos colisao)
 
 
 	# # SWITCH - OFFSET_INIMIGO
-
+			#lw t5, 0(s7) 
 	# # Atualiza Frames de Inimigos
 	# # la s7 IMAGEM_INIMIGOS
 	# li s6, 0
