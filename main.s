@@ -251,6 +251,12 @@ INICIO_GAME_LOOP_FASE_1:
 	j INICIO_GAME_LOOP_FASE_1
 
 FIM_GAME_LOOP_FASE_1:
+
+.include "game_over"
+SAI_GAME_OVER:
+
+
+
 	li a7, 10
 	ecall
 
