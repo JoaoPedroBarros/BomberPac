@@ -3,6 +3,10 @@
 	DEBUG_MSG: .string "Achei um bloco de valor 2\n"
 
 .text
+
+.include "animacao"
+SAI_ANIMACAO:
+
 ################################################
 ###### Controle de Fases ######
 ################################################
