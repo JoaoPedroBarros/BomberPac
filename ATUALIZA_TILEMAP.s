@@ -21,14 +21,34 @@
 
 		li s2, 0				# Inicializa contador de blocos para iterar
 		LOOP_DESTROI_BLOCO:
-	
 			addi s2, s2, 1
 
 			lw s1, TILEMAP_MUTAVEL  # Pegue endereco inicial do TILEMAP
 			add s1, s1, t0          # Pegue endereco da matriz ao redor da bomba
 			lb s3, 0(s1)            # Pegue conteudo da matriz
 
+			li t2, 1
+			beq t2, s3, ITERA_EXPLOSAO
+
+			la t5, IMAGEM_EXPLOSAO
+			call LOOP_TILEMAP_OBJETO_DUPLO
+
+			li s0, 10
+			call Espera
+
+			# Confere Jogador
+			la s6, POSICAO_JOGADOR
+			lw s6, 0(s6)
+			# Se o jogador nao estiver na explosao, confere se ha inimigos no raio da explosao
+			bne t0, s6, CONFERE_INIMIGOS_EXPLOSAO
+				# Reduz vida em 1
+				la t2, VIDAS
+				lw t4, 0(t2)
+				addi t4, t4, -1
+				sw t4, 0(t2)
+
             # Confere se ha inimigos no raio da explosao
+			CONFERE_INIMIGOS_EXPLOSAO:
 			li s6, 0
 			la s5, POSICAO_INIMIGOS
 			la s8, QUANTIDADE_DE_INIMIGOS
@@ -54,7 +74,7 @@
 			
 			li t2, 8                          
 			bne s3, t2, ITERA_EXPLOSAO    # Nova posicao disponivel para colocar bomba (Vazio)
-			
+
 			la t1, PONTOS
 			lw t2, 0(t1)
 			addi t2, t2, 1
@@ -92,14 +112,18 @@
 			j LOOP_DESTROI_BLOCO
 		
 		DELETA_BOMBA:
+			# Retorna ao centro da explosao
 			addi t0, t0, -21			# Centraliza a posicao para onde a bomba fica
 			
+			# Pega tilemap onde a bomba estava
 			lw s1, TILEMAP_MUTAVEL		# Inicializa TILEMAP_MUTAVEL
 			add s1, s1, t0				# s1 += posicao da bomba
 
+			# Apaga bomba
 			li t2, 0
 			sb t2, 0(s1)
 			
+			# Reseta POSICAO_BOMBA
 			la t0, POSICAO_BOMBA		# Verifica se tem uma bomba
 			sw t2, 0(t0)
 
@@ -321,7 +345,7 @@ SWITCH_LETRAS:
 				# Prototipo de realiza animacao matar inimigos
 				# Em todos os inimigos
 				lw t0, 0(s5)
-				la t5, IMAGEM_INIMIGO_2
+				la t5, IMAGEM_EXPLOSAO
 				call LOOP_TILEMAP_OBJETO_DUPLO
 				# Zera a posicao do inimigo i
 				li t3, 0
