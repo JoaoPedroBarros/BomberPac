@@ -1,3 +1,89 @@
+	########################
+	## LOOP CHECKAR BOMBA ##
+	########################
+
+	la t0, POSICAO_BOMBA		# Verifica se tem uma bomba
+	lw t0, 0(t0)
+	 
+	li s2, 0
+		beq t0, s2, SWITCH_LETRAS	
+		la t2, SCORE_TIMER		# Inicializa SCORE_TIMER e TEMPO_INICIAL_BOMBA para comparar
+		lw t2, 0(t2)
+		la s2, TEMPO_INICIAL_BOMBA
+		lw s2, 0(s2)
+
+		# Verifica se a bomba ja pode explodir
+		addi s2, s2, -2				# Se ja passou 2 segundos
+		blt s2, t2, SWITCH_LETRAS
+		addi t0, t0, -21
+
+
+		li s2, 0				# Inicializa contador de blocos para iterar
+		LOOP_DESTROI_BLOCO:
+	
+			addi s2, s2, 1
+
+			lw s1, TILEMAP_MUTAVEL  # Pegue endereco inicial do TILEMAP
+			add s1, s1, t0          # Pegue endereco da matriz ao redor da bomba
+			lb s3, 0(s1)            # Pegue conteudo da matriz
+
+			li t2, 3	
+			beq s3, t2, EXPLODE_BLOCO	# Se o espaco checado eh um tijolo pula pra EXPLODE_BLOCO
+			
+			li t2, 8                          
+			bne s3, t2, ITERA_EXPLOSAO    # Nova posicao disponivel para colocar bomba (Vazio)
+			
+			
+			la t1, PONTOS
+			lw t2, 0(t1)
+			addi t2, t2, 1
+			sw t2, 0(t1)
+			
+			li t2, 0
+			sb t2, 0(s1)
+
+			ITERA_EXPLOSAO:
+				li t2, 3
+				rem t2, s2, t2
+				li t3, 0
+				beq t2, t3, PROX_LINHA		# Se o indice atual passou de linha pula pra PROX_LINHA
+			
+				addi t0, t0, 1		# Vai para a proxima posicao
+				j LOOP_DESTROI_BLOCO
+
+
+		EXPLODE_BLOCO:
+			li s4, 40
+			call DestroiTijolo		# Quebra o bloco
+
+			li t2, 3
+			rem t2, s2, t2
+			li t3, 0
+			beq t2, t3, PROX_LINHA		# Se o indice atual passou de linha pula pra PROX_LINHA
+
+			addi t0, t0, 1
+			j LOOP_DESTROI_BLOCO
+		
+		PROX_LINHA:
+			li t2, 9
+			beq s2, t2, DELETA_BOMBA	# Se a bomba nao acabou de checar
+			addi t0, t0, 18				# Vai para a proxima linha
+			j LOOP_DESTROI_BLOCO
+		
+		DELETA_BOMBA:
+			addi t0, t0, -21			# Centraliza a posicao para onde a bomba fica
+			
+			lw s1, TILEMAP_MUTAVEL		# Inicializa TILEMAP_MUTAVEL
+			add s1, s1, t0				# s1 += posicao da bomba
+
+			li t2, 0
+			sb t2, 0(s1)
+			
+			la t0, POSICAO_BOMBA		# Verifica se tem uma bomba
+			sw t2, 0(t0)
+
+
+SWITCH_LETRAS:
 	la s0, TECLA_LIDA           # Pegue o endereco de TECLA_LIDA
     lw s0, 0(s0)
 
@@ -63,12 +149,12 @@
 			j MOVIMENTA_JOGADOR
 
 	CASO_TECLA_x:
-		li t2, 120		            # Pegue o valor 'L' na tabela ASCII	
-		bne s0, t2, CASO_TECLA_L	# Se a tecla pressionada nao foi 'K'
+		li t2, 'x'		            # Pegue o valor 'L' na tabela ASCII	
+		bne s0, t2, CASO_TECLA_j	# Se a tecla pressionada nao foi 'K'
 			# Confere se POWERUP FORCA estah ativo
 			la t1, BOOLEANO_FORCA
 			lw t1, 0(t1)
-			beqz t1, CASO_TECLA_L
+			beqz t1, CASO_TECLA_j
 
 			# Verifica a direcao que o Jogador estah olhando
 			# t1 = ULTIMA_TECLA_PRESSIONADA
@@ -116,6 +202,89 @@
 			call DestroiTijolo
 			j MOVIMENTA_INIMIGOS
 
+	CASO_TECLA_j:
+		li t2, 'j'		            # Pegue o valor 'j' na tabela ASCII	
+		bne s0, t2, CASO_TECLA_L	# Se a tecla pressionada nao foi 'j'
+
+			## Verifica se ja tem uma bomba
+			li t2, 0
+
+			# Pega o endereco e posicao da bomba
+			la s0, POSICAO_BOMBA
+			lw t1, 0(s0)
+			bne t1, t2, MOVIMENTA_INIMIGOS
+
+			# Verifica a direcao que o Jogador esta olhando
+			la t2, ULTIMA_TECLA_PRESSIONADA
+			lw t1, 0(t2)
+
+			# Pega posicao do jogador
+			la s0, POSICAO_JOGADOR		# Pegue endereco POSICAO_ATUAL_JOGADOR
+			lw t0, 0(s0)                # Pegue conteudo POSICAO_ATUAL_JOGADOR
+
+			# Caso esteja olhando para cima
+			li t2, 'w'
+			bne t1, t2, CASO_BOMBA_ESQUERDA
+			addi t0, t0, -20                # Adicone o offset
+			j COLISAO_CHECK
+
+			# Caso esteja olhando para esquerda
+			CASO_BOMBA_ESQUERDA:
+			li t2, 'a'
+			bne t1, t2, CASO_BOMBA_BAIXO
+			addi t0, t0, -1                # Adicone o offset
+			j COLISAO_CHECK
+
+			# Caso esteja olhando para baixo
+			CASO_BOMBA_BAIXO:
+			li t2, 's'
+			bne t1, t2, CASO_BOMBA_DIREITA
+			addi t0, t0, 20                # Adicone o offset
+			j COLISAO_CHECK
+
+			# Caso esteja olhando para direita
+			CASO_BOMBA_DIREITA:
+			li t2, 'd'
+			bne t1, t2, MOVIMENTA_INIMIGOS
+			addi t0, t0, 1        	   # Adicone o offset
+			
+			COLISAO_CHECK:
+			lw s1, TILEMAP_MUTAVEL  # Pegue endereco inicial do TILEMAP
+			add s1, s1, t0          # Pegue endereco da matriz POSICAO_ATUAL_JOGADOR + OFFSET
+			lb s3, 0(s1)            # Pegue conteudo da matriz POSICAO_ATUAL_JOGADOR + OFFSET
+
+			# Permite colocar bomba em espaco vazio
+			li t2, 0             
+			beq s3, t2, POE_BOMBA    # Nova posicao disponivel para colocar bomba (Vazio)
+			
+			# Permite colocar bomba em espaco com ponto
+			li t2, 8                          
+			bne s3, t2, MOVIMENTA_INIMIGOS    # Nova posicao disponivel para colocar bomba (Vazio)
+			
+			# Contabiliza pontos
+			la t1, PONTOS
+			lw t2, 0(t1)
+			addi t2, t2, 1
+			sw t2, 0(t1)
+	
+			# Poe ou deploy a bomba a frente do jogador
+			POE_BOMBA:
+
+			# Salva nova posicao da bomba
+			la s0, POSICAO_BOMBA
+			sw t0, 0(s0)
+			
+			# Altera valor no tilemap para Valor - Bomba
+			li t2, 7
+			sb t2, 0(s1)		
+			
+			# Inicializa o Contador de explosao da bomba
+			la s0, TEMPO_INICIAL_BOMBA
+			la s1, SCORE_TIMER	
+			lw s1, 0(s1)
+			sw s1, 0(s0)
+			
+			j MOVIMENTA_INIMIGOS
 
 # 	CASO_TECLA_K:
 # 		li t2, 'K'		            # Pegue o valor 'L' na tabela ASCII	
@@ -253,11 +422,13 @@ MOVIMENTA_JOGADOR:
     add s1, s1, t0          # Pegue endereco da matriz POSICAO_ATUAL_JOGADOR + OFFSET
     lb s3, 0(s1)            # Pegue conteudo da matriz POSICAO_ATUAL_JOGADOR + OFFSET
 
-    ## EVENTO: COLISAO BLOCOS ##
-    li t2, 1                            # Pegue o valor 1
+    ## EVENTO: COLISAO BLOCOS e BOMBA ##
+    li t2, 1                          # Pegue o valor 1
     beq s3, t2, MOVIMENTA_INIMIGOS    # Conteudo na nova posicao eh Bloco indestrutivel (Pilastra)
-    li t2, 3                            # Pegue o valor 3
+    li t2, 3                          # Pegue o valor 3
     beq s3, t2, MOVIMENTA_INIMIGOS    # Conteudo na nova posicao eh Bloco destrutivel (Tijolo)
+  	li t2, 7                          # Pegue o valor 7
+    beq s3, t2, MOVIMENTA_INIMIGOS    # Conteudo na nova posicao eh uma Bomba
 
     ## EVENTO: POWERUP FORCA ##
     li t2, 6
@@ -401,15 +572,27 @@ MOVIMENTA_INIMIGOS:
 				li t2, 200
 
 				add t2, t2, t4	# Valor de comparacao   
-				blt t3, t2, ITERA_LOOP_MOVIMENTA_INIMIGOS # Se passou 1 segundo, reduza SCORE_TIMER	
-					# Atualiza posicao inimigo
-					add t0, t0, t1	# Pega posicao + offset
-					sw t0, 0(s5)	# POSICAO_INIMIGO i = posicao + offset
+				blt t3, t2, ITERA_LOOP_MOVIMENTA_INIMIGOS # Se passou 1 segundo, reduza SCORE_TIMER
 
 					# Atualiaz a TEMPO_INICIAL inimigo i
 					li a7, 30   	# Chama a funcao TIME()
 					ecall       	# Chama o Sistema operacional
 					sw a0, 0(s2)	# Atualiza o conteudo de TEMPO_INICIAL inimigo i
+
+					# Atualiza posicao inimigo
+					add t0, t0, t1	# Pega posicao + offset
+					sw t0, 0(s5)	# POSICAO_INIMIGO i = posicao + offset
+
+					# Confere colisao com o jogador
+					la t4, POSICAO_JOGADOR
+					lw t4, 0(t4)
+
+					bne t0, t4, ITERA_LOOP_MOVIMENTA_INIMIGOS
+						# Reduz vida em 1
+						la t2, VIDAS
+						lw t4, 0(t2)
+						addi t4, t4, -1
+						sw t4, 0(t2)
 
 			ITERA_LOOP_MOVIMENTA_INIMIGOS:
 				addi s6, s6, 1	# Itera contador

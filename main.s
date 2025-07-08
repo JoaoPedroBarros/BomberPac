@@ -10,17 +10,25 @@ SAI_ANIMACAO:
 ################################################
 ###### Controle de Fases ######
 ################################################
+	# Define tilemap atual como tilemap da fase 1
 	la t0, FASE_1
 	la t1, TILEMAP_MUTAVEL
 	sw t0, 0(t1)
 
+	# Define fase atual como a fase 1
     la t0, FASE_ATUAL
 	li t1, 1
     sw t1, 0(t0)
 
+	# Define que haverao 4 inimigos na fase 1
     la t0, QUANTIDADE_DE_INIMIGOS
 	li t1, 4
     sb t1, 0(t0)
+
+	# Define condicao de vitoria por coleta de pontos na fase 1
+    la t0, MAXIMO_PONTOS
+	li t1, 166
+    sw t1, 0(t0)
 
 	j CONFIGURA_FASE_1
 
@@ -36,13 +44,25 @@ PASSA_FASE_2:
 			j LOOP_ESVAZIA_HUD
 	FIM_ESVAZIA_HUD:
 
+	# Define tilemap atual como tilemap da fase 2
 	la t0, FASE_2
 	la t1, TILEMAP_MUTAVEL
 	sw t0, 0(t1)
 
+	# Define fase atual como a fase 2
 	la t0, FASE_ATUAL
 	li t1, 2
     sw t1, 0(t0)
+
+	# Define condicao de vitoria por coleta de pontos na fase 2
+    la t0, MAXIMO_PONTOS
+	li t1, 138
+    sw t1, 0(t0)
+
+	# Define que haverao 2 inimigos na fase 2
+    la t0, QUANTIDADE_DE_INIMIGOS
+	li t1, 2
+    sb t1, 0(t0)
 
 CONFIGURA_FASE_1:
 ##########################################################
@@ -90,6 +110,18 @@ CONFIGURA_FASE_1:
 ################################################
 ###### Inicializa inimigos ##############
 ################################################
+	# Inicializa Posicao da Bomba
+	la t0, POSICAO_BOMBA
+	li t1, 0
+	sw t1, 0(t0)
+
+	# Define fase atual como a fase 2
+	la t0, FASE_ATUAL
+    lw t0, 0(t0)
+
+	li t2, 2
+	beq t0, t2, CONFIGURA_INIMIGOS_FASE_2
+
 	# Inicializa Posicoes dos inimigos
 	la t0, POSICAO_INIMIGOS
 	li t1, 98
@@ -133,6 +165,18 @@ CONFIGURA_FASE_1:
 	la t1, IMAGEM_FANTASMA_ESQUERDA
 	sw t1, 12(t5)	# Imagem do segundo inimigo
 
+	j INICIALIZACOES
+
+CONFIGURA_INIMIGOS_FASE_2:
+	# Inicializa Posicoes dos inimigos
+	la t0, POSICAO_INIMIGOS
+	li t1, 278
+	sw t1, 0(t0)	# Posicao do primeiro inimigo
+	
+	li t1, 258
+	sw t1, 4(t0)	# Posicao do segundo inimigo
+
+INICIALIZACOES:
 ################################################
 ###### Inicializa todos os scores ##############
 ################################################
@@ -195,6 +239,20 @@ INICIO_GAME_LOOP_FASE_1:
 	# ecall
 	.include "REDUZ_TIMER.s"
 
+	# Confere se todos os pontos foram coletados
+	la t0, MAXIMO_PONTOS
+	lw t0, 0(t0)
+	la t1, PONTOS
+	lw t1, 0(t1)
+	bne t0, t1, RENDERIZACOES
+
+	la t0, FASE_ATUAL
+	lw t0, 0(t0)
+	li t2, 2
+	beq t0, t2, FIM_GAME_LOOP_FASE_1
+	j PASSA_FASE_2
+
+	RENDERIZACOES:
 	# ####################################
 	# # RENDERIZAÇOES DINAMICAS #
 	# ####################################
@@ -254,8 +312,6 @@ FIM_GAME_LOOP_FASE_1:
 
 .include "game_over"
 SAI_GAME_OVER:
-
-
 
 	li a7, 10
 	ecall
