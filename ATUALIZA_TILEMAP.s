@@ -1,3 +1,4 @@
+# Existe um bug de colisao dupla. Provavelmente devido aa movimentacao acelerada do personagem	
 	########################
 	## LOOP CHECKAR BOMBA ##
 	########################
@@ -27,12 +28,32 @@
 			add s1, s1, t0          # Pegue endereco da matriz ao redor da bomba
 			lb s3, 0(s1)            # Pegue conteudo da matriz
 
+            # Confere se ha inimigos no raio da explosao
+			li s6, 0
+			la s5, POSICAO_INIMIGOS
+			la s8, QUANTIDADE_DE_INIMIGOS
+			lb s8, 0(s8)
+			LOOP_CONFERE_INIMIGOS_EXPLOSAO:
+				beq s6, s8, VERIFICA_TIJOLOS
+					lw t3, 0(s5)	# Pegue posicao do inimigo i
+
+                    # Se posicao inimigo i for diferente do valor da area de explosao, ignore
+                    bne t0, t3, ITERA_CONFERE_INIMIGOS_EXPLOSAO
+                        # Posicao inimigo = 0 : Sinonimo de inimigo morto
+                        li t2, 0
+                        sw t2, 0(s5)
+
+					ITERA_CONFERE_INIMIGOS_EXPLOSAO:
+						addi s6, s6, 1	# Itera contador
+						addi s5, s5, 4	# Itera Vetor Posicao inimigos
+						j LOOP_CONFERE_INIMIGOS_EXPLOSAO
+
+            VERIFICA_TIJOLOS:
 			li t2, 3	
 			beq s3, t2, EXPLODE_BLOCO	# Se o espaco checado eh um tijolo pula pra EXPLODE_BLOCO
 			
 			li t2, 8                          
 			bne s3, t2, ITERA_EXPLOSAO    # Nova posicao disponivel para colocar bomba (Vazio)
-			
 			
 			la t1, PONTOS
 			lw t2, 0(t1)
@@ -204,7 +225,7 @@ SWITCH_LETRAS:
 
 	CASO_TECLA_j:
 		li t2, 'j'		            # Pegue o valor 'j' na tabela ASCII	
-		bne s0, t2, CASO_TECLA_L	# Se a tecla pressionada nao foi 'j'
+		bne s0, t2, CASO_TECLA_K	# Se a tecla pressionada nao foi 'j'
 
 			## Verifica se ja tem uma bomba
 			li t2, 0
@@ -286,31 +307,29 @@ SWITCH_LETRAS:
 			
 			j MOVIMENTA_INIMIGOS
 
-# 	CASO_TECLA_K:
-# 		li t2, 'K'		            # Pegue o valor 'L' na tabela ASCII	
-# 		bne s0, t2, CASO_TECLA_L	# Se a tecla pressionada nao foi 'K'
+	CASO_TECLA_K:
+		li t2, 'K'		            # Pegue o valor 'L' na tabela ASCII	
+		bne s0, t2, CASO_TECLA_L	# Se a tecla pressionada nao foi 'K'
 
 # 		## EVENTO : MATA_INIMIGOS ##
-# 		li t0, 41		    # Primeira matriz do APAGA_BLOCOS
-# 		li t4, 278		    # Ultima matriz do tilemap
-# 		lw s2, TILEMAP_MUTAVEL	# Pegue o endereco do Tilemap
-# 		LOOP_TILEMAP_APAGA_BLOCOS:
-# 			bgt t0, t4, MOVIMENTA_INIMIGOS		# Enquanto t0 < ultima matriz do tilemap, faca o abaixo
-# 			add s2, s2, t0	        # Itere o endereco do byte no tilemap
-# 			lb t5, 0(s2)	        # Valor da matriz no Tilemap
-
-# 			## O caso abaixo substitui o tijolo por um espaço vazio ##
-# 			li t2, 3		                            # Pegue o valor 0
-# 			bne t5, t2, ITERA_LOOP_TILEMAP_APAGA_BLOCOS	# Compare com o valor no byte atual do Tilemap
-# 				call DestroiTijolo
-# 				ITERA_LOOP_TILEMAP_APAGA_BLOCOS:
-# 					addi t0, t0, 1	                      # t0++
-# 					li s4, 20                             # s4 = 20
-# 					rem s4, t0, s4                        # s4 = t0 % 20
-# 					li s5, 19                             # s5 = 19
-# 					bne s4, s5, LOOP_TILEMAP_APAGA_BLOCOS # Se s4 != 19 -> LOOP_TILEMAP_CAMPO
-# 					addi t0, t0, 2                        # s4 == 19 -> Some 2 : Pule colunas indestrutiveis
-# 					j LOOP_TILEMAP_APAGA_BLOCOS           # Retorne para a verificacao do Loop que percorre o Tilemap
+		li s6, 0
+		la s5, POSICAO_INIMIGOS
+		la s8, QUANTIDADE_DE_INIMIGOS
+		lb s8, 0(s8)
+		LOOP_APAGA_INIMIGOS:
+			beq s6, s8, Passafase
+				# Prototipo de realiza animacao matar inimigos
+				# Em todos os inimigos
+				lw t0, 0(s5)
+				la t5, IMAGEM_INIMIGO_2
+				call LOOP_TILEMAP_OBJETO_DUPLO
+				# Zera a posicao do inimigo i
+				li t3, 0
+				sw t3, 0(s5)	
+				ITERA_APAGA_INIMIGOS:
+					addi s6, s6, 1	# Itera contador
+					addi s5, s5, 4	# Itera Vetor Posicao inimigos
+					j LOOP_APAGA_INIMIGOS
 
 	CASO_TECLA_L:
 		li t2, 'L'		            # Pegue o valor 'L' na tabela ASCII	
@@ -439,6 +458,13 @@ MOVIMENTA_JOGADOR:
 		li t2, 1
 		sw t2, 0(t1)
 
+		# Inicializa o Contador de tempo do power Up
+		la t1, TEMPO_INICIAL_POWER_UP_FORCA
+		la t2, SCORE_TIMER	
+		lw t2, 0(t2)
+		sw t2, 0(t1)
+
+
 		# Atualiza SPRITE de FORCA
 			# Switch letras #
 		li t2, 'w'
@@ -526,6 +552,7 @@ MOVIMENTA_INIMIGOS:
 	la s7, OFFSET_INIMIGOS
 	lw t6, TILEMAP_MUTAVEL
 	la s2, TEMPO_INICIAL_INIMIGOS
+	la s9, IMAGEM_INIMIGOS
 
 	# Verifica fase atual para definir tipo de inimigo
 	la t0, FASE_ATUAL
@@ -540,6 +567,8 @@ MOVIMENTA_INIMIGOS:
 	LOOP_MOVIMENTA_INIMIGOS:
 		beq s6, s8, FIM_ATUALIZA_TILEMAP
 			lw t0, 0(s5)	# Pegue posicao do inimigo i
+			beqz t0, ITERA_LOOP_MOVIMENTA_INIMIGOS	# Ignore inimigos mortos
+
 			lb t1, 0(s7)	# Pegue offset do inimigo i
 
 			add t2, t6, t0	# Pegue tilemap da posicao inimigo i
@@ -552,6 +581,31 @@ MOVIMENTA_INIMIGOS:
 				li t4, -1
 				mul t1, t1, t4
 				sb t1, 0(s7)
+
+				# Ajusta sprite para o sprite invertido
+				# t4 == -1
+				bne t1, t4, INIMIGO_CIMA
+				la t5, IMAGEM_FANTASMA_ESQUERDA
+				sw t5, 0(s9)
+				j ITERA_LOOP_MOVIMENTA_INIMIGOS
+				
+				INIMIGO_CIMA:
+				li t4, -20
+				bne t1, t4, INIMIGO_BAIXO
+				la t5, IMAGEM_FANTASMA_CIMA
+				sw t5, 0(s9)
+				j ITERA_LOOP_MOVIMENTA_INIMIGOS
+
+				INIMIGO_BAIXO:
+				li t4, 20
+				bne t1, t4, INIMIGO_DIREITA
+				la t5, IMAGEM_FANTASMA_BAIXO
+				sw t5, 0(s9)
+				j ITERA_LOOP_MOVIMENTA_INIMIGOS
+
+				INIMIGO_DIREITA:
+				la t5, IMAGEM_FANTASMA_DIREITA
+				sw t5, 0(s9)
 				j ITERA_LOOP_MOVIMENTA_INIMIGOS
 
 			# Movimenta inimigo
@@ -599,6 +653,7 @@ MOVIMENTA_INIMIGOS:
 				addi s5, s5, 4	# Itera Vetor Posicao inimigos
 				addi s7, s7, 1	# Itera Vetor Offset inimigos
 				addi s2, s2, 4	# Itera Vetor TEMPO_INICIAL inimigos
+				addi s9, s9, 4	# Itera Vetor IMAGEM inimigos
 				j LOOP_MOVIMENTA_INIMIGOS
 
 
