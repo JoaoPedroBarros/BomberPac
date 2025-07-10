@@ -140,8 +140,6 @@ INICIO_GAME_LOOP_FASE_1:
 	la t0, FRAME
 	sw t1, 0(t0)
 
-	.include "auxiliar.s"
-
 	.include "TECLADO_FASE_1.s"
 
 	# ############################

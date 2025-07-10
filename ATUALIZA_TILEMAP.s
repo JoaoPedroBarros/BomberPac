@@ -72,6 +72,12 @@
 			li t2, 3	
 			beq s3, t2, EXPLODE_BLOCO	# Se o espaco checado eh um tijolo pula pra EXPLODE_BLOCO
 			
+			li t2, 6
+			bne s3, t2, CASO_EXPLOSAO_PONTO
+			li t2, 0
+			sb t2, 0(s1)
+
+			CASO_EXPLOSAO_PONTO:
 			li t2, 8                          
 			bne s3, t2, ITERA_EXPLOSAO    # Nova posicao disponivel para colocar bomba (Vazio)
 

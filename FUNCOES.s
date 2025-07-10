@@ -152,6 +152,7 @@ FIM_PRINTA_ALGARISMOS:
 ######################################################
 ######## FUNCAO 2 #####################
 ######################################################
+# t0 = Posicao no Tilemap
 # t5 = Endereco Imagem do objeto 
 LOOP_TILEMAP_OBJETO_DUPLO:
 	lui t4, 0xFF000			# Carrega os 20 bits mais a esquerda de t4 com ENDERECO_INICIAL_FRAME : Nesse caso do Frame 0
@@ -180,10 +181,10 @@ LOOP_TILEMAP_OBJETO_DUPLO:
 	PREENCHE_MATRIZ_OBJETO:
 			# Inicializa linha e ultima linha
 			li s0, 0	# Linha inicial = 0
-			li s1, 16	# Linha final = 16
+			li s10, 16	# Linha final = 16
 	# Loop para printar cada linha da matriz
 	LOOP_LINHAS_MATRIZ_OBJETO:
-		beq s0, s1, FIM_OBJETO	# Enquanto i < 16, faca o abaixo
+		beq s0, s10, FIM_OBJETO	# Enquanto i < 16, faca o abaixo
 			# Inicializa coluna e ultima coluna
 			li t2, 0	# Coluna inicial = 0
 			li t3, 16	# t3 = numero de colunas
@@ -250,10 +251,10 @@ RenderizacaoDinamica:
 	PREENCHE_MATRIZ_DINAMICO:
 			# Inicializa linha e ultima linha
 			li s0, 0	# Linha inicial = 0
-			li s1, 16	# Linha final = 16
+			li s10, 16	# Linha final = 16
 	# Loop para printar cada linha da matriz
 	LOOP_LINHAS_MATRIZ_DINAMICO:
-		beq s0, s1, FimRenderizacaoDinamica	# Enquanto i < 16, faca o abaixo
+		beq s0, s10, FimRenderizacaoDinamica	# Enquanto i < 16, faca o abaixo
 			# Inicializa coluna e ultima coluna
 			li t2, 0	# Coluna inicial = 0
 			li t3, 16	# t3 = numero de colunas
