@@ -147,7 +147,21 @@ PRINTA_ALGARISMOS:
 			j LOOP_LINHAS_MATRIZ_ALGARISMO	# Retorne para a verificacao do Loop das Linhas Matriz
 
 FIM_PRINTA_ALGARISMOS:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+
+	li t3, 17
+	blt t0, t3, ENCERRA_PRINTA_ALGARISMOS
+
+	la t5, IMAGEM_2
+	call LOOP_TILEMAP_OBJETO_DUPLO
+
+	lw ra, 0(sp)
+	addi sp, sp, 4
+
+ENCERRA_PRINTA_ALGARISMOS:
     ret
+
 
 ######################################################
 ######## FUNCAO 2 #####################

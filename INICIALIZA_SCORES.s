@@ -1,6 +1,6 @@
 	# Inicializa SCORE_TIMER
 	la t0, SCORE_TIMER
-	li t1, 201
+	li t1, 101
 	sw t1, 0(t0)
 
 	# Inicializa VIDAS
