@@ -185,7 +185,7 @@ CONFIGURA_INIMIGOS_FASE_2:
 
 	# Inicializa Offsets dos inimigos
 	la t0, OFFSET_INIMIGOS
-	li t1, -1
+	li t1, 1
 	sb t1, 0(t0)	# Offset do primeiro inimigo
 
 INICIALIZACOES:
