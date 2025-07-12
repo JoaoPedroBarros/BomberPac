@@ -47,12 +47,12 @@ PASSA_FASE_2:
 
 	# Define condicao de vitoria por coleta de pontos na fase 2
     la t0, MAXIMO_PONTOS
-	li t1, 138
+	li t1, 149
     sw t1, 0(t0)
 
 	# Define que haverao 2 inimigos na fase 2
     la t0, QUANTIDADE_DE_INIMIGOS
-	li t1, 2
+	li t1, 1
     sb t1, 0(t0)
 
 CONFIGURA_FASE_1:
@@ -166,13 +166,27 @@ CONFIGURA_FASE_1:
 	j INICIALIZACOES
 
 CONFIGURA_INIMIGOS_FASE_2:
-	# Inicializa Posicoes dos inimigos
+	# Inicializa Posicao dos inimigo na fase 2
+
+	# Posicao inimigo 1 Fase 2
 	la t0, POSICAO_INIMIGOS
-	li t1, 278
+	li t1, 42		
 	sw t1, 0(t0)	# Posicao do primeiro inimigo
-	
-	li t1, 258
-	sw t1, 4(t0)	# Posicao do segundo inimigo
+
+	# Inicializa contador de passos
+	la t0, POSICAO_CAMINHO
+	li t1, 0
+	sb t1, 0(t0)
+
+	# Inicializa Imagens dos inimigos
+	la t5, IMAGEM_INIMIGOS
+	la t1, IMAGEM_PAC_MAN_DIREITA
+	sw t1, 0(t5)	# Imagem do primeiro inimigo
+
+	# Inicializa Offsets dos inimigos
+	la t0, OFFSET_INIMIGOS
+	li t1, -1
+	sb t1, 0(t0)	# Offset do primeiro inimigo
 
 INICIALIZACOES:
 ################################################

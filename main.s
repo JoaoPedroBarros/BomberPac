@@ -157,15 +157,15 @@ INICIO_GAME_LOOP_FASE_1:
 	j INICIO_GAME_LOOP_FASE_1
 
 FIM_GAME_LOOP_FASE_1:
-
+TELA_VITORIA:
 	.include "victory"
 	j SAI_GAME_OVER
 	
-
 # Tela de morte ou derrota
-	#.include "game_over"
+TELA_DERROTA:
+	.include "game_over"
+	
 SAI_GAME_OVER:
-
 	li a7, 10
 	ecall
 

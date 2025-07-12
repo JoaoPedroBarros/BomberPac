@@ -31,13 +31,18 @@ LOOP_TILEMAP_CAMPO:
 				j PREENCHE_MATRIZ_CAMPO	# Printa a matriz do byte atual		
 		CASO_3_CAMPO:
 				li t2, 3		# Pegue o valor 0
-				bne t5, t2, CASO_6_CAMPO	# Compare com o valor no byte atual do Tilemap
+				bne t5, t2, CASO_5_CAMPO	# Compare com o valor no byte atual do Tilemap
 				la t5, IMAGEM_3		# Se o byte atual == 2, pegue a imagem_2
+				j PREENCHE_MATRIZ_CAMPO	# Printa a matriz do byte atual		
+		CASO_5_CAMPO:
+				li t2, 5		# Pegue o valor 0
+				bne t5, t2, CASO_6_CAMPO	# Compare com o valor no byte atual do Tilemap
+				la t5, IMAGEM_PODER_CHUTE		# Se o byte atual == 2, pegue a imagem_2
 				j PREENCHE_MATRIZ_CAMPO	# Printa a matriz do byte atual		
 		CASO_6_CAMPO:
 				li t2, 6		# Pegue o valor 0
 				bne t5, t2, CASO_7_CAMPO	# Compare com o valor no byte atual do Tilemap
-				la t5, VIDA		# Se o byte atual == 2, pegue a imagem_2
+				la t5, IMAGEM_PODER_FORCA		# Se o byte atual == 2, pegue a imagem_2
 				j PREENCHE_MATRIZ_CAMPO	# Printa a matriz do byte atual				
 		CASO_7_CAMPO:
 				li t2, 7		# Pegue o valor 0

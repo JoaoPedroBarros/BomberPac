@@ -436,7 +436,7 @@ DestroiTijolo:
 		bge t2, s4, SURGE_POWER_UP
 
 		SURGE_ARMADILHA:
-			li t3, 7
+			li t3, 5
 			sb t3, 0(s1)
 			j FimDestroiTijolo
 
@@ -689,15 +689,59 @@ MOVIMENTA_INIMIGOS:
 
 	# Movimentacao do Inimigo Tipo 1 (Offset randomizado apos colisao)
 	INIMIGO_TIPO_2:
-	
 
+		# Faz a periodizacao do movimento
+			la s2, TEMPO_INICIAL_INIMIGOS
+			lw t2, 0(s2)   # Pega TEMPO_INICIAL_INIMIGO i
 
-	# # SWITCH - OFFSET_INIMIGO
-			#lw t5, 0(s7) 
-	# # Atualiza Frames de Inimigos
-	# # la s7 IMAGEM_INIMIGOS
-	# li s6, 0
-	# li s8, 2
-	# 	addi s7, s7, 4
+			# Pega tempo atual
+			li a7, 30           # Chama a funcao TIME()
+			ecall               # Chama o Sistema operacional
+
+			# Pega o tempo passado desde o tempo inicial
+			sub t3, a0, t2			# t3 = TEMPO_ATUAL - TEMPO_INICIAL_TESTE
+
+			# Faz as comparacoes de tempo serem de 250, 300, 350, 400
+			li t2, 170
+			blt t3, t2, FIM_ATUALIZA_TILEMAP # Se passou 1 segundo, reduza SCORE_TIMER
+				# Atualiza TEMPO_INICIAL inimigo i
+				li a7, 30   	# Chama a funcao TIME()
+				ecall       	# Chama o Sistema operacional
+				sw a0, 0(s2)	# Atualiza o conteudo de TEMPO_INICIAL inimigo i
+
+		# MOVIMENTA PACMAN
+			# Pega indice atual
+			la s5, POSICAO_CAMINHO
+			lb t0, 0(s5)
+
+			# Pega Offset atual
+			la s6, OFFSET_INIMIGOS
+			lb t1, 0(s6)
+
+			# Pega tamanho do vetor Caminho
+			la t2, TAM_CAMINHO_PACMAN
+			lb t2, 0(t2)
+
+			# Monta Novo_indice = (indice_atual + offset + tamanho) % tamanho
+			add t3, t0, t1
+			add t3, t3, t2
+			rem t3, t3, t2
+
+			# Atualiza Posicao caminho
+			sb t3, 0(s5)
+
+			# Pega Nova_posicao no vetor Caminho
+			la s5, CAMINHO_PACMAN
+			li t4, 2
+			mul t4, t3, t4
+			add s5, s5, t4
+			lh s5, 0(s5)
+
+			la s6, POSICAO_INIMIGOS
+			sw s5, 0(s6)
+
+			# mv a0, s5
+			# li a7, 1
+			# ecall
 
 FIM_ATUALIZA_TILEMAP:

@@ -308,5 +308,5 @@ Passafase:
 	la t0, FASE_ATUAL
 	lw t0, 0(t0)
 	li t2, 2
-	beq t0, t2, FIM_GAME_LOOP_FASE_1
+	beq t0, t2, TELA_VITORIA
 	j PASSA_FASE_2
