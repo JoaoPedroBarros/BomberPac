@@ -101,6 +101,21 @@ CONFIGURA_FASE_1:
 	li t0, 200
 	sw t0, 0(s2)
 
+	# Inicializa Booleano do Power Up de chute
+	la t1, BOOLEANO_CHUTE
+	li t5, 0
+	sb t5, 0(t1)
+
+	# Inicializa TEMPO_INICIAL_POWER_UP_FORCA
+	la s2, TEMPO_INICIAL_POWER_UP_CHUTE
+	li t0, 200
+	sb t0, 0(s2)
+
+	# Inicializa Offsets da bomba
+	la t0, OFFSET_BOMBA
+	li t1, 0
+	sb t1, 0(t0)	# Offset do primeiro inimigo
+
 ################################################
 ###### Inicializa inimigos ##############
 ################################################
@@ -206,7 +221,11 @@ INICIALIZACOES:
 											
 	# Inicializa TEMPO_INICIAL_SCORE_TIMER
 	la s2, TEMPO_INICIAL_SCORE_TIMER
-	sw a0, 0(s2)	# Inicializa: TEMPO_INICIAL_SCORE_TIMER = TEMPO_ATUAL			
+	sw a0, 0(s2)	# Inicializa: TEMPO_INICIAL_SCORE_TIMER = TEMPO_ATUAL		
+
+	# Inicializa TEMPO_MOVIMENTO_BOMBA
+	la s2, TEMPO_MOVIMENTO_BOMBA
+	sw a0, 0(s2)	# Inicializa: TEMPO_MOVIMENTO_BOMBA = TEMPO_ATUAL	
 
 	# Inicializa TEMPO_INICIAL_MUSICA
 	la s2, TEMPO_INICIAL_MUSICA

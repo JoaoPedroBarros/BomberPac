@@ -5,7 +5,11 @@
 
 	la t0, POSICAO_BOMBA		# Verifica se tem uma bomba
 	lw t0, 0(t0)
-	 
+
+	la t4, OFFSET_BOMBA
+	lb t4, 0(t4)
+	bnez t4, SWITCH_LETRAS
+
 	li s2, 0
 		beq t0, s2, SWITCH_LETRAS	
 		la t2, SCORE_TIMER		# Inicializa SCORE_TIMER e TEMPO_INICIAL_BOMBA para comparar
@@ -139,6 +143,9 @@ SWITCH_LETRAS:
     lw s0, 0(s0)
 
     la t1, BOOLEANO_FORCA			
+    lw t1, 0(t1)				# Pegue o valor do Power Up
+
+	la t1, BOOLEANO_FORCA			
     lw t1, 0(t1)				# Pegue o valor do Power Up
 
 	###################
@@ -341,7 +348,7 @@ SWITCH_LETRAS:
 		li t2, 'K'		            # Pegue o valor 'L' na tabela ASCII	
 		bne s0, t2, CASO_TECLA_L	# Se a tecla pressionada nao foi 'K'
 
-# 		## EVENTO : MATA_INIMIGOS ##
+		## EVENTO : MATA_INIMIGOS ##
 		li s6, 0
 		la s5, POSICAO_INIMIGOS
 		la s8, QUANTIDADE_DE_INIMIGOS
@@ -471,31 +478,66 @@ MOVIMENTA_JOGADOR:
     add s1, s1, t0          # Pegue endereco da matriz POSICAO_ATUAL_JOGADOR + OFFSET
     lb s3, 0(s1)            # Pegue conteudo da matriz POSICAO_ATUAL_JOGADOR + OFFSET
 
-    ## EVENTO: COLISAO BLOCOS e BOMBA ##
+    ## EVENTO: COLISAO BLOCOS ##
     li t2, 1                          # Pegue o valor 1
     beq s3, t2, MOVIMENTA_INIMIGOS    # Conteudo na nova posicao eh Bloco indestrutivel (Pilastra)
     li t2, 3                          # Pegue o valor 3
     beq s3, t2, MOVIMENTA_INIMIGOS    # Conteudo na nova posicao eh Bloco destrutivel (Tijolo)
-  	li t2, 7                          # Pegue o valor 7
-    beq s3, t2, MOVIMENTA_INIMIGOS    # Conteudo na nova posicao eh uma Bomba
 
-    ## EVENTO: POWERUP FORCA ##
-    li t2, 6
-    bne s3, t2, COLISAO_INIMIGO
+	# Colisao Bomba
+  	li t2, 7                     # Pegue o valor 7
+    bne s3, t2, POWERUP_CHUTE    # Conteudo na nova posicao eh uma Bomba
 
-		# Ativa PowerUp Forca
-		la t1, BOOLEANO_FORCA
+	# Verifica se o PowerUp chute estah ativado
+		la t1, BOOLEANO_CHUTE
+		lb t1, (t1)
+		beqz t1, MOVIMENTA_INIMIGOS		# Se o PowerUp estiver desativado, considerase uma colisao comum
+			# Atualiza OFFSET da Bomba
+			la s4, OFFSET_BOMBA
+				# Switch letras #
+			li t2, 'w'
+			bne s7, t2, CASO_CHUTE_a
+				li t2, -20
+				sb t2, 0(s4)
+				j MOVIMENTA_INIMIGOS
+
+			CASO_CHUTE_a:
+			li t2, 'a'
+			bne s7, t2, CASO_CHUTE_s
+				li t2, -1
+				sb t2, 0(s4)
+				j MOVIMENTA_INIMIGOS
+
+			CASO_CHUTE_s:
+			li t2, 's'
+			bne s7, t2, CASO_CHUTE_d
+				li t2, 20
+				sb t2, 0(s4)
+				j MOVIMENTA_INIMIGOS
+
+			CASO_CHUTE_d:
+				li t2, 1
+				sb t2, 0(s4)
+				j MOVIMENTA_INIMIGOS
+
+
+	## EVENTO: POWERUP CHUTE ##
+	POWERUP_CHUTE:
+    	li t2, 5
+    	bne s3, t2, POWER_UP_FORCA
+
+		# Ativa PowerUp Chute
+		la t1, BOOLEANO_CHUTE
 		li t2, 1
-		sw t2, 0(t1)
+		sb t2, 0(t1)
 
 		# Inicializa o Contador de tempo do power Up
-		la t1, TEMPO_INICIAL_POWER_UP_FORCA
+		la t1, TEMPO_INICIAL_POWER_UP_CHUTE
 		la t2, SCORE_TIMER	
 		lw t2, 0(t2)
-		sw t2, 0(t1)
+		sb t2, 0(t1)
 
-
-		# Atualiza SPRITE de FORCA
+		# Atualiza SPRITE de CHUTE
 			# Switch letras #
 		li t2, 'w'
 		bne s7, t2, CASO_POWERUP_a
@@ -521,6 +563,50 @@ MOVIMENTA_JOGADOR:
 			la s6, IMAGEM_JOGADOR_FORCA_direita
 			sw s6, 0(t5)
 			j ATUALIZA_JOGADOR
+
+    ## EVENTO: POWERUP FORCA ##
+	POWER_UP_FORCA:
+		li t2, 6
+		bne s3, t2, COLISAO_INIMIGO
+
+			# Ativa PowerUp Forca
+			la t1, BOOLEANO_FORCA
+			li t2, 1
+			sw t2, 0(t1)
+
+			# Inicializa o Contador de tempo do power Up
+			la t1, TEMPO_INICIAL_POWER_UP_FORCA
+			la t2, SCORE_TIMER	
+			lw t2, 0(t2)
+			sw t2, 0(t1)
+
+
+			# Atualiza SPRITE de FORCA
+				# Switch letras #
+			li t2, 'w'
+			bne s7, t2, CASO_POWERUP_a
+				la s6, IMAGEM_JOGADOR_FORCA_cima
+				sw s6, 0(t5)
+				j ATUALIZA_JOGADOR
+
+			CASO_POWERUP_a:
+			li t2, 'a'
+			bne s7, t2, CASO_POWERUP_s
+				la s6, IMAGEM_JOGADOR_FORCA_esquerda
+				sw s6, 0(t5)
+				j ATUALIZA_JOGADOR
+
+			CASO_POWERUP_s:
+			li t2, 's'
+			bne s7, t2, CASO_POWERUP_d
+				la s6, IMAGEM_JOGADOR_FORCA_baixo
+				sw s6, 0(t5)
+				j ATUALIZA_JOGADOR
+
+			CASO_POWERUP_d:
+				la s6, IMAGEM_JOGADOR_FORCA_direita
+				sw s6, 0(t5)
+				j ATUALIZA_JOGADOR
 
 	## EVENTO: COLISAO COM INIMIGO
 	COLISAO_INIMIGO:
@@ -559,11 +645,6 @@ MOVIMENTA_JOGADOR:
 		sw t2, 0(t1)
 
     ATUALIZA_JOGADOR:
-		# Preenche o espaco com o "conteudo" jogador
-		## Gambiarra para evitar flick de renderizacao ##
-		# li t2, 4
-		# sb t2, 0(s1)
-
     	# MOVIMENTA O JOGADOR #
 		# Inverte o Offset
 		li t2, -1
@@ -595,7 +676,7 @@ MOVIMENTA_INIMIGOS:
 	la s8, QUANTIDADE_DE_INIMIGOS
 	lb s8, 0(s8)
 	LOOP_MOVIMENTA_INIMIGOS:
-		beq s6, s8, FIM_ATUALIZA_TILEMAP
+		beq s6, s8, MOVIMENTA_BOMBA
 			lw t0, 0(s5)	# Pegue posicao do inimigo i
 			beqz t0, ITERA_LOOP_MOVIMENTA_INIMIGOS	# Ignore inimigos mortos
 
@@ -703,7 +784,7 @@ MOVIMENTA_INIMIGOS:
 
 			# Faz as comparacoes de tempo serem de 250, 300, 350, 400
 			li t2, 170
-			blt t3, t2, FIM_ATUALIZA_TILEMAP # Se passou 1 segundo, reduza SCORE_TIMER
+			blt t3, t2, MOVIMENTA_BOMBA # Se passou 1 segundo, reduza SCORE_TIMER
 				# Atualiza TEMPO_INICIAL inimigo i
 				li a7, 30   	# Chama a funcao TIME()
 				ecall       	# Chama o Sistema operacional
@@ -771,7 +852,7 @@ MOVIMENTA_INIMIGOS:
 					li t2, -1
 					mul t1, t1, t2
 					sb t1, 0(s6)
-					j FIM_ATUALIZA_TILEMAP
+					j MOVIMENTA_BOMBA
 
 
 			# Pega Nova_posicao no vetor Caminho
@@ -793,25 +874,100 @@ MOVIMENTA_INIMIGOS:
                 bne t0, t2, PACMAN_ESQUERDA
                 la t1, IMAGEM_PAC_MAN_CIMA
                 sw t1, 0(t5)	# Imagem do primeiro inimigo
-                j FIM_ATUALIZA_TILEMAP
+                j MOVIMENTA_BOMBA
 
                 PACMAN_ESQUERDA:
                 li t2, -1
                 bne t0, t2, PACMAN_BAIXO
                 la t1, IMAGEM_PAC_MAN_ESQUERDA
                 sw t1, 0(t5)	# Imagem do primeiro inimigo
-                j FIM_ATUALIZA_TILEMAP
+                j MOVIMENTA_BOMBA
 
                 PACMAN_BAIXO:
                 li t2, 20
                 bne t0, t2, PACMAN_DIREITA
                 la t1, IMAGEM_PAC_MAN_BAIXO
                 sw t1, 0(t5)	# Imagem do primeiro inimigo
-                j FIM_ATUALIZA_TILEMAP
+                j MOVIMENTA_BOMBA
 
                 PACMAN_DIREITA:
                 la t1, IMAGEM_PAC_MAN_DIREITA
                 sw t1, 0(t5)
 
+MOVIMENTA_BOMBA:
+	# Pega offset da bomba
+	la s4, OFFSET_BOMBA
+	lb t4, 0(s4)
+	beqz t4, FIM_ATUALIZA_TILEMAP	# Se a bomba nao tiver que se mexer, pule essa funcao
+
+	# Faz a periodizacao do movimento
+		la s2, TEMPO_MOVIMENTO_BOMBA
+		lw t2, 0(s2)   # Pega TEMPO_INICIAL_INIMIGO i
+
+		# Pega tempo atual
+		li a7, 30           # Chama a funcao TIME()
+		ecall               # Chama o Sistema operacional
+
+		# Pega o tempo passado desde o tempo inicial
+		sub t3, a0, t2			# t3 = TEMPO_ATUAL - TEMPO_INICIAL_TESTE
+
+		# Compara o tempo decorrido desde a ultima comparacao
+		li t2, 40
+		blt t3, t2, FIM_ATUALIZA_TILEMAP # Se passou 1 segundo, reduza SCORE_TIMER
+			# Atualiza TEMPO_INICIAL inimigo i
+			li a7, 30   	# Chama a funcao TIME()
+			ecall       	# Chama o Sistema operacional
+			sw a0, 0(s2)	# Atualiza o conteudo de TEMPO_INICIAL inimigo i
+
+
+	# Pega posicao atual da bomba
+	la s0, POSICAO_BOMBA		# Verifica se tem uma bomba
+	lw t0, 0(s0)
+
+	add t3, t0, t4		# t3 = Posicao atual da bomba + offset
+
+	# Pega valor no tilemap em Posicao atual da bomba + offset
+	lw s1, TILEMAP_MUTAVEL
+	add s1, s1, t3			# Endereco da Posicao atual da bomba + offset
+	lb t6, 0(s1)
+
+	# Se colidir com Pilastra
+	li t2, 1
+	beq t6, t2, PARA_BOMBA
+	# Se colidir com tijolo
+	li t2, 3
+	beq t6, t2, PARA_BOMBA
+
+	# Verifica se ha ponto a ser coletado
+	li t2, 8
+	bne t6, t2, ATUALIZA_BOMBA
+		# Contabiliza pontos
+		la t1, PONTOS
+		lw t2, 0(t1)
+		addi t2, t2, 1
+		sw t2, 0(t1)
+
+	# Movimenta bomba
+	ATUALIZA_BOMBA:
+		li t2, 7		# Pega o valor 7 (bomba)
+		sb t2, 0(s1)	# Movimenta a bomba
+
+		sub s1, s1, t4	# Retira OFFSET
+		li t2, 0		# Pega o valor zero (Campo Vazio)
+		sb t2, 0(s1)	# Apaga rastro da bomba
+
+		sw t3, 0(s0)	# Atualiza POSICAO_BOMBA
+
+		j FIM_ATUALIZA_TILEMAP
+	PARA_BOMBA:
+		# Reseta OFFSET_BOMBA
+		li t1, 0
+		sb t1, 0(s4)	# OFFSET_BOMBA = 0
+
+		# Inicializa o Contador de explosao da bomba
+		la s0, TEMPO_INICIAL_BOMBA
+		la s1, SCORE_TIMER	
+		lw s1, 0(s1)
+		sw s1, 0(s0)
 
 FIM_ATUALIZA_TILEMAP:
