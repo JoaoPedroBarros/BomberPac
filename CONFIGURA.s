@@ -47,7 +47,7 @@ PASSA_FASE_2:
 
 	# Define condicao de vitoria por coleta de pontos na fase 2
     la t0, MAXIMO_PONTOS
-	li t1, 149
+	li t1, 143
     sw t1, 0(t0)
 
 	# Define que haverao 2 inimigos na fase 2
