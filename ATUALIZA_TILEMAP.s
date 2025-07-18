@@ -22,6 +22,12 @@
 		blt s2, t2, SWITCH_LETRAS
 		addi t0, t0, -21
 
+		li a0, 20
+		li a1, 1000
+		li a2, 127
+		li a3, 127
+		li a7, 31
+		ecall
 
 		li s2, 0				# Inicializa contador de blocos para iterar
 		LOOP_DESTROI_BLOCO:
