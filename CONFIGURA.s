@@ -109,7 +109,7 @@ CONFIGURA_FASE_1:
 	# Inicializa TEMPO_INICIAL_POWER_UP_FORCA
 	la s2, TEMPO_INICIAL_POWER_UP_CHUTE
 	li t0, 200
-	sb t0, 0(s2)
+	sw t0, 0(s2)
 
 	# Inicializa Offsets da bomba
 	la t0, OFFSET_BOMBA

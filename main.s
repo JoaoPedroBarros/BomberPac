@@ -25,7 +25,7 @@ INICIO_GAME_LOOP_FASE_1:
 
 		# Verifica se passou 6 segundos desde que o PowerUp forca foi pego
 		addi s2, s2, -6
-		blt s2, t2, CONDICAO_DE_VITORIAS
+		blt s2, t2, TEMPORIZADOR_CHUTE
 
 		# Reseta PowerUp Forca
 		la t1, BOOLEANO_FORCA		
@@ -42,73 +42,42 @@ INICIO_GAME_LOOP_FASE_1:
 		bne s7, t2, CASO_ESQUERDA
 			la s6, IMAGEM_JOGADOR_cima
 			sw s6, 0(t5)
-			j CONDICAO_DE_VITORIAS
+			j TEMPORIZADOR_CHUTE
 
 		CASO_ESQUERDA:
 		li t2, 'a'
 		bne s7, t2, CASO_BAIXO
 			la s6, IMAGEM_JOGADOR_esquerda
 			sw s6, 0(t5)
-			j CONDICAO_DE_VITORIAS
+			j TEMPORIZADOR_CHUTE
 
 		CASO_BAIXO:
 		li t2, 's'
 		bne s7, t2, CASO_DIREITA
 			la s6, IMAGEM_JOGADOR_baixo
 			sw s6, 0(t5)
-			j CONDICAO_DE_VITORIAS
+			j TEMPORIZADOR_CHUTE
 
 		CASO_DIREITA:
 			la s6, IMAGEM_JOGADOR_direita
 			sw s6, 0(t5)
 
+	TEMPORIZADOR_CHUTE:
+		#Pega valor do SCORE_TIMER
+		la t2, SCORE_TIMER		
+		lw t2, 0(t2)
+		# Pega tempo do PowerUp Chute
+		la s2, TEMPO_INICIAL_POWER_UP_CHUTE
+		lw s2, 0(s2)
 
-		## Reseta PowerUp Chute
-		# Verifica se o Power Up de forca jah expirou
-		# Pega os conteudos de SCORE_TIMER e de TEMPO_INICIAL_POWER_UP_FORCA
-		# la t2, SCORE_TIMER		
-		# lw t2, 0(t2)
-		# la s2, TEMPO_INICIAL_POWER_UP_FORCA
-		# lw s2, 0(s2)
+		# Verifica se passou 4 segundos desde que o PowerUp chute foi pego
+		addi s2, s2, -8
+		blt s2, t2, CONDICAO_DE_VITORIAS
 
-		# # Verifica se passou 6 segundos desde que o PowerUp forca foi pego
-		# addi s2, s2, -6
-		# blt s2, t2, CONDICAO_DE_VITORIAS
-
-		# # Reseta PowerUp Forca
-		# la t1, BOOLEANO_FORCA		
-		# li t2, 0	
-    	# sw t2, 0(t1)				# Pegue o valor do Power Up
-
-		# la s7, ULTIMA_TECLA_PRESSIONADA
-		# lw s7, 0(s7)
-		# la t5, IMAGEM_JOGADOR
-		# # Atualiza SPRITE para o Sprite Normal
-		# # Switch letras #
-		# # Caso cima
-		# li t2, 'w'
-		# bne s7, t2, CASO_ESQUERDA
-		# 	la s6, IMAGEM_JOGADOR_cima
-		# 	sw s6, 0(t5)
-		# 	j CONDICAO_DE_VITORIAS
-
-		# CASO_ESQUERDA:
-		# li t2, 'a'
-		# bne s7, t2, CASO_BAIXO
-		# 	la s6, IMAGEM_JOGADOR_esquerda
-		# 	sw s6, 0(t5)
-		# 	j CONDICAO_DE_VITORIAS
-
-		# CASO_BAIXO:
-		# li t2, 's'
-		# bne s7, t2, CASO_DIREITA
-		# 	la s6, IMAGEM_JOGADOR_baixo
-		# 	sw s6, 0(t5)
-		# 	j CONDICAO_DE_VITORIAS
-
-		# CASO_DIREITA:
-		# 	la s6, IMAGEM_JOGADOR_direita
-		# 	sw s6, 0(t5)
+		# Reseta PowerUp Chute
+		la t1, BOOLEANO_CHUTE		
+		li t2, 0	
+    	sw t2, 0(t1)
 
 	# Confere se todos os pontos foram coletados (Condicao de Vitoria 1)
 	CONDICAO_DE_VITORIAS:

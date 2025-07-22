@@ -81,7 +81,13 @@
             VERIFICA_TIJOLOS:
 			li t2, 3	
 			beq s3, t2, EXPLODE_BLOCO	# Se o espaco checado eh um tijolo pula pra EXPLODE_BLOCO
-			
+
+			li t2, 5
+			bne s3, t2, POWER_FORCA_EXPLOSAO
+			li t2, 0
+			sb t2, 0(s1)
+
+			POWER_FORCA_EXPLOSAO:
 			li t2, 6
 			bne s3, t2, CASO_EXPLOSAO_PONTO
 			li t2, 0
@@ -364,6 +370,7 @@ SWITCH_LETRAS:
 				# Prototipo de realiza animacao matar inimigos
 				# Em todos os inimigos
 				lw t0, 0(s5)
+				beqz t0, ITERA_APAGA_INIMIGOS
 				la t5, IMAGEM_EXPLOSAO
 				call LOOP_TILEMAP_OBJETO_DUPLO
 				# Zera a posicao do inimigo i
@@ -541,34 +548,9 @@ MOVIMENTA_JOGADOR:
 		la t1, TEMPO_INICIAL_POWER_UP_CHUTE
 		la t2, SCORE_TIMER	
 		lw t2, 0(t2)
-		sb t2, 0(t1)
+		sw t2, 0(t1)
 
-		# Atualiza SPRITE de CHUTE
-			# Switch letras #
-		li t2, 'w'
-		bne s7, t2, CASO_POWERUP_a
-			la s6, IMAGEM_JOGADOR_FORCA_cima
-			sw s6, 0(t5)
-			j ATUALIZA_JOGADOR
-
-		CASO_POWERUP_a:
-		li t2, 'a'
-		bne s7, t2, CASO_POWERUP_s
-			la s6, IMAGEM_JOGADOR_FORCA_esquerda
-			sw s6, 0(t5)
-			j ATUALIZA_JOGADOR
-
-		CASO_POWERUP_s:
-		li t2, 's'
-		bne s7, t2, CASO_POWERUP_d
-			la s6, IMAGEM_JOGADOR_FORCA_baixo
-			sw s6, 0(t5)
-			j ATUALIZA_JOGADOR
-
-		CASO_POWERUP_d:
-			la s6, IMAGEM_JOGADOR_FORCA_direita
-			sw s6, 0(t5)
-			j ATUALIZA_JOGADOR
+		j ATUALIZA_JOGADOR
 
     ## EVENTO: POWERUP FORCA ##
 	POWER_UP_FORCA:

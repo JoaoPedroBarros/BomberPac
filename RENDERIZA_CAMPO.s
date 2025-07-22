@@ -47,6 +47,15 @@ LOOP_TILEMAP_CAMPO:
 		CASO_7_CAMPO:
 				li t2, 7		# Pegue o valor 0
 				bne t5, t2, CASO_8_CAMPO	# Compare com o valor no byte atual do Tilemap
+				
+				# Se Chute estiiver ativo
+				la t2, BOOLEANO_CHUTE
+				lb t2, 0(t2)
+				beqz t2, BOMBA_NORMAL
+				la t5, bomba_chute
+				j PREENCHE_MATRIZ_CAMPO	# Printa a matriz do byte atual				
+
+				BOMBA_NORMAL:
 				la t5, bomba		# Se o byte atual == 2, pegue a imagem_2
 				j PREENCHE_MATRIZ_CAMPO	# Printa a matriz do byte atual				
 		CASO_8_CAMPO:
