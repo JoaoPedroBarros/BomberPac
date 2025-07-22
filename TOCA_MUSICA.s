@@ -34,10 +34,16 @@ TOCA_NOTA_FASE_1:
 	lw a3, 12(t4)		# a3 = volume da proxima nota em decibeis
 
 	# Toca nota
+	bne a3, zero, TOCA_NOTA
+	j ATUALIZA_NOTA
+
+	TOCA_NOTA: 
 	li a7, 31			# Configura sistema para tocar a nota midi escolhida acima
 	ecall				# Chama o sistema operacional
+	j PROXIMO_INDICE
 
 	# Atualiza Nota
+	ATUALIZA_NOTA:
 	lw t3, 4(t4)		# Pega duracao da musica
 	# Pega Tempo atual
 	li a7, 30   # Chama a funcao TIME()
@@ -50,6 +56,7 @@ TOCA_NOTA_FASE_1:
 	sw t3, 0(s2)                    # TEMPO_INICIAL_MUSICA = Tempo_proxima_nota
 
 	# Permite loop musical
+	PROXIMO_INDICE:
 	addi t1, t1, 1						# t1++	: Passa para a proxima nota
 	la t2, TAMANHO_MUSICA				# Pega endereco do TAMANHO_MUSICA
 	lw t2, 0(t2)						# Pega conteudo do TAMANHO_MUSICA
