@@ -248,10 +248,6 @@ INICIALIZACOES:
 # Inicializa as variaveis de usadas na MUSICA ###
 #############################################################
 CONFIGURA_MUSICA:
-	# Configura instrumento
-	li a2, 42	# Define que o timbre do instrumento : Nesse caso, um instrumento de cordas qualquer
-	li a3, 80	# Define o volume da nota : Nesse caso 80 decibeis
-
 	# Inicializa ponteiro ("agulha") da musica
 	li t0, 0			# t0 = 0
 	la t1, INDICE_NOTA	# t1 = &INDICE_NOTA

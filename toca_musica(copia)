@@ -19,7 +19,7 @@
 TOCA_NOTA_FASE_1:
 	# Conversao de indice de nota para Endereco da nota
 	# Calcula quantos bytes devem ser pulados
-	li t0, 16			# 8 bytes corresponde a uma Nota
+	li t0, 8			# 8 bytes corresponde a uma Nota
 	mul t0, t0, t1		# t1 * 8 == numero de bytes a serem pulados ateh a nota atual
 
 	# Adiciona os bytes pulados ao endereco inicial da musica
@@ -29,9 +29,7 @@ TOCA_NOTA_FASE_1:
 	# Atualiza valores no "reprodutor de som"
 	#addi t4, t4, 8		# t4 = Endereco proxima nota
 	lw a0, 0(t4)		# a0 = valor da proxima nota
-	lw a1, 4(t4)		# a1 = duracao da proxima nota em milissegundos
-	lw a2, 8(t4)		# a2 = instrumento da proxima nota
-	lw a3, 12(t4)		# a3 = volume da proxima nota em decibeis
+	lw a1, 4(t4)		# a1 = duracao da proxima nota
 
 	# Toca nota
 	li a7, 31			# Configura sistema para tocar a nota midi escolhida acima
