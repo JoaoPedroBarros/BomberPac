@@ -250,7 +250,7 @@ GAMEOVER:
     la t5, game_over_tela
     call printa_imagem_tela_inteira2
     call printa_imagem_tela_inteira3
-    li t0, 5000
+    li t0, 500
     call Espera3
     
     j SAI_GAME_OVER

@@ -174,14 +174,32 @@ INICIO_GAME_LOOP_FASE_1:
 
 FIM_GAME_LOOP_FASE_1:
 TELA_VITORIA:
+	la t0, VICTORY_MUSICA
+	li t1, 1
+	sb t1, 0(t0)
 	.include "victory"
 	j SAI_GAME_OVER
 	
 # Tela de morte ou derrota
 TELA_DERROTA:
+	la t0, VICTORY_MUSICA
+	li t1, 0
+	sb t1, 0(t0)
 	.include "game_over"
 	
 SAI_GAME_OVER:
+	li t1, 1
+	la t0, VICTORY_MUSICA
+	lb t0, 0(t0)
+	beq t0, t1, VICTORY_PLAY
+
+	.include "TOCA_MUSICA_LOSE.s"
+	j EXIT_GAME_OVER
+
+VICTORY_PLAY:
+	.include "TOCA_MUSICA_WIN.s"
+
+EXIT_GAME_OVER:
 	li a7, 10
 	ecall
 

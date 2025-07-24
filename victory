@@ -250,7 +250,7 @@ VICTORY:
     la t5, victory_tela
     call printa_imagem_tela_inteira_VICTORY1
     call printa_imagem_tela_inteira_VICTORY2
-    li t0, 5000
+    li t0, 500
     call Espera_VICTORY
     
     j SAI_GAME_OVER
